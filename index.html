@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>MAGNETO — دۆزەرەوەى مەعدەنى ئاسن</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --bg-elev: #131720;
+    --bg-elev-2: #1a2030;
+    --line: #1f2533;
+    --line-bright: #2a3344;
+    --amber: #ffb84d;
+    --amber-dim: #8a6021;
+    --green: #4dff9e;
+    --green-dim: #1f5c3a;
+    --red: #ff4d6d;
+    --text: #e8eaed;
+    --text-dim: #6b7280;
+    --text-faint: #4a5260;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --body: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html, body {
+    background: var(--bg);
+    overscroll-behavior: none;
+  }
+  
+  body {
+    font-family: var(--body);
+    color: var(--text);
+    min-height: 100vh;
+    padding: max(env(safe-area-inset-top), 12px) 16px max(env(safe-area-inset-bottom), 20px);
+    background-image: 
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 184, 77, 0.05) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.006) 3px, rgba(255,255,255,0.006) 4px);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow-x: hidden;
+  }
+  
+  .frame {
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  
+  /* === Header === */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px 14px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+  
+  .logo {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    color: var(--amber);
+  }
+  
+  .logo::before {
+    content: '◢ ';
+    color: var(--amber-dim);
+  }
+  
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-faint);
+    transition: all 0.3s;
+  }
+  
+  .dot.live {
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green), 0 0 4px var(--green);
+    animation: pulse 1.4s infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+  
+  /* === Disclaimer === */
+  .disclaimer {
+    background: linear-gradient(180deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+    border: 1px solid var(--line);
+    border-right: 3px solid var(--amber);
+    border-radius: 8px;
+    padding: 13px 15px;
+    margin-bottom: 22px;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  
+  .disclaimer strong {
+    color: var(--amber);
+    font-weight: 600;
+  }
+  
+  /* === Gauge === */
+  .gauge {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 340px;
+    margin: 0 auto 18px;
+  }
+  
+  .gauge svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  .gauge-track {
+    fill: none;
+    stroke: var(--line);
+    stroke-width: 6;
+    opacity: 0.6;
+  }
+  
+  .gauge-fill {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.18s ease-out, stroke 0.3s;
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  
+  .gauge-fill.warn { stroke: var(--amber); }
+  .gauge-fill.alert { stroke: var(--red); }
+  
+  .tick {
+    stroke: var(--line-bright);
+    stroke-width: 1.2;
+  }
+  .tick.major {
+    stroke: var(--text-dim);
+    stroke-width: 1.8;
+  }
+  
+  .needle-line {
+    stroke: var(--amber);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    transform-origin: 100px 100px;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 0 6px var(--amber));
+  }
+  
+  .needle-hub {
+    fill: var(--bg-elev);
+    stroke: var(--amber);
+    stroke-width: 2;
+  }
+  
+  .gauge-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    padding-bottom: 8%;
+  }
+  
+  .value {
+    font-family: var(--mono);
+    font-size: 60px;
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    transition: color 0.3s;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 20px currentColor;
+  }
+  
+  .value.warn { color: var(--amber); }
+  .value.alert { color: var(--red); }
+  
+  .value-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    margin-top: 8px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  
+  /* === Status bar === */
+  .status-bar {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    text-align: center;
+    font-size: 14px;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    font-weight: 500;
+  }
+  
+  .status-bar.alert {
+    border-color: var(--red);
+    background: rgba(255, 77, 109, 0.08);
+    color: var(--red);
+  }
+  .status-bar.warn {
+    border-color: var(--amber);
+    background: rgba(255, 184, 77, 0.06);
+    color: var(--amber);
+  }
+  
+  /* === Controls === */
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  
+  .btn {
+    background: var(--bg-elev);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 15px 16px;
+    font-family: var(--body);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .btn:active {
+    transform: scale(0.97);
+    background: var(--line);
+  }
+  
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .btn.primary {
+    background: var(--amber);
+    color: #0a0c10;
+    border-color: var(--amber);
+    grid-column: 1 / -1;
+    font-weight: 700;
+    box-shadow: 0 0 20px rgba(255, 184, 77, 0.2);
+  }
+  
+  .btn.primary:active {
+    background: var(--amber-dim);
+    color: var(--text);
+  }
+  
+  /* === Stats === */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 22px;
+  }
+  
+  .stat {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+  }
+  
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  
+  /* === Info === */
+  .info {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 1.85;
+  }
+  
+  .info h3 {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-family: var(--mono);
+    font-weight: 600;
+  }
+  
+  .info ol {
+    padding-right: 20px;
+  }
+  
+  .info li {
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  
+  .info li::marker {
+    color: var(--amber);
+    font-family: var(--mono);
+    font-weight: 600;
+  }
+  
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <header class="header">
+    <div class="logo">MAGNETO_v1.0</div>
+    <div class="status-pill">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusLabel">OFFLINE</span>
+    </div>
+  </header>
+  
+  <div class="disclaimer">
+    ئەم ئامێرە تەنها <strong>مەعدەنى ferromagnetic</strong> (ئاسن، پۆڵا، نیکڵ) لە دوورى ١–٥ سم دۆزێتەوە. <strong>زێڕ، زیو، مس و ئەلۆمنیۆم نادۆزرێتەوە</strong> — یاسایەکى فیزیایە، نەک کێشەى نەرمەکاڵا.
+  </div>
+  
+  <div class="gauge">
+    <svg viewBox="0 0 200 200">
+      <circle class="gauge-track" cx="100" cy="100" r="82"
+              stroke-dasharray="386 800"
+              transform="rotate(135 100 100)"/>
+      <circle class="gauge-fill" id="gaugeFill" cx="100" cy="100" r="82"
+              stroke-dasharray="0 800"
+              transform="rotate(135 100 100)"/>
+      <g id="ticks"></g>
+      <line class="needle-line" id="needle" 
+            x1="100" y1="100" x2="100" y2="35"/>
+      <circle class="needle-hub" cx="100" cy="100" r="7"/>
+    </svg>
+    
+    <div class="gauge-center">
+      <div class="value" id="valueDisplay">000</div>
+      <div class="value-label">UNITS · NORMALIZED</div>
+    </div>
+  </div>
+  
+  <div class="status-bar" id="statusBar">دوگمەى دەستپێکردن لێ بدە</div>
+  
+  <div class="controls">
+    <button class="btn primary" id="startBtn">دەستپێکردنى ئامێر</button>
+    <button class="btn hidden" id="calibrateBtn">ڕێکخستن (CAL)</button>
+    <button class="btn hidden" id="muteBtn">دەنگ · کارا</button>
+  </div>
+  
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">BASE</div>
+      <div class="stat-value" id="baselineStat">--</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Δ DELTA</div>
+      <div class="stat-value" id="deltaStat">--</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">PEAK</div>
+      <div class="stat-value" id="peakStat">--</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">RATE</div>
+      <div class="stat-value" id="rateStat">0Hz</div>
+    </div>
+  </div>
+  
+  <div class="info">
+    <h3>ڕێنماى بەکارهێنان</h3>
+    <ol>
+      <li>دوگمەى "دەستپێکردن" لێ بدە و ڕێگە بدە بە هەستەوەرەکان</li>
+      <li>ئایفۆن دوور لە مەعدەن، تەلى کارەبا و مۆبایلى دیکە ڕابگرە</li>
+      <li>دوگمەى "ڕێکخستن" لێ بدە بۆ دانانى بنەڕەت</li>
+      <li>ئایفۆن بە هێواشى نزیک شوێنە گومانلێکراوەکە بکەرەوە</li>
+      <li>پشتى ئایفۆن (لاى کامێرا) بەرەو شوێنەکە ڕابگرە، چونکە مەگنەتۆمیتەر لەوێیە</li>
+      <li>ئەگەر Δ DELTA بەرز ببێتەوە و دەنگ دەکات، مەعدەنى ئاسن لەوێیە</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  
+  const $ = id => document.getElementById(id);
+  const els = {
+    startBtn: $('startBtn'),
+    calibrateBtn: $('calibrateBtn'),
+    muteBtn: $('muteBtn'),
+    valueDisplay: $('valueDisplay'),
+    needle: $('needle'),
+    gaugeFill: $('gaugeFill'),
+    statusBar: $('statusBar'),
+    statusDot: $('statusDot'),
+    statusLabel: $('statusLabel'),
+    baselineStat: $('baselineStat'),
+    deltaStat: $('deltaStat'),
+    peakStat: $('peakStat'),
+    rateStat: $('rateStat'),
+    ticks: $('ticks'),
+  };
+  
+  // State
+  let baseline = null;
+  let rawValue = 50;
+  let displayValue = 50;
+  let peak = 0;
+  let muted = false;
+  let audioCtx = null;
+  let sampleCount = 0;
+  let lastRateUpdate = Date.now();
+  let lastBeepByState = {};
+  let sensorType = null;
+  
+  // ============ TICK MARKS ============
+  function buildTicks() {
+    const svgNS = 'http://www.w3.org/2000/svg';
+    // Gauge sweep is 270° from -135° (bottom-left) to +135° (bottom-right)
+    for (let i = 0; i <= 10; i++) {
+      const angle = -135 + (i * 27);
+      const rad = (angle - 90) * Math.PI / 180;
+      const major = i % 2 === 0;
+      const innerR = major ? 68 : 72;
+      const outerR = 78;
+      
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', 100 + Math.cos(rad) * innerR);
+      line.setAttribute('y1', 100 + Math.sin(rad) * innerR);
+      line.setAttribute('x2', 100 + Math.cos(rad) * outerR);
+      line.setAttribute('y2', 100 + Math.sin(rad) * outerR);
+      line.setAttribute('class', major ? 'tick major' : 'tick');
+      els.ticks.appendChild(line);
+    }
+  }
+  buildTicks();
+  
+  // ============ AUDIO ============
+  function initAudio() {
+    if (audioCtx) return;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      console.warn('AudioContext unavailable:', e);
+    }
+  }
+  
+  function beep(freq, duration) {
+    if (muted || !audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.15, now + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + duration + 0.05);
+  }
+  
+  function maybeBeep(state, freq, interval, duration = 0.08) {
+    const now = Date.now();
+    if (!lastBeepByState[state] || now - lastBeepByState[state] >= interval) {
+      lastBeepByState[state] = now;
+      beep(freq, duration);
+    }
+  }
+  
+  // ============ SENSOR PERMISSIONS ============
+  async function requestPermissions() {
+    const reqs = [];
+    
+    if (typeof DeviceMotionEvent !== 'undefined' &&
+        typeof DeviceMotionEvent.requestPermission === 'function') {
+      reqs.push(DeviceMotionEvent.requestPermission().catch(e => 'error'));
+    }
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      reqs.push(DeviceOrientationEvent.requestPermission().catch(e => 'error'));
+    }
+    
+    if (reqs.length === 0) return true;
+    
+    const results = await Promise.all(reqs);
+    return results.some(r => r === 'granted');
+  }
+  
+  // ============ SENSORS ============
+  
+  // Best: Native Magnetometer API (Android Chrome)
+  async function tryNativeMagnetometer() {
+    if (!('Magnetometer' in window)) return false;
+    try {
+      const sensor = new Magnetometer({ frequency: 30, referenceFrame: 'device' });
+      sensor.addEventListener('reading', () => {
+        const mag = Math.sqrt(sensor.x ** 2 + sensor.y ** 2 + sensor.z ** 2);
+        handleReading(mag);
+      });
+      sensor.addEventListener('error', e => console.warn('Mag sensor error:', e.error));
+      sensor.start();
+      sensorType = 'MAG·NATIVE';
+      return true;
+    } catch (e) {
+      console.log('Native magnetometer not available');
+      return false;
+    }
+  }
+  
+  // Fallback for iOS: use compass heading instability as proxy
+  function setupCompassFallback() {
+    let lastHeading = null;
+    let lastTime = Date.now();
+    let driftBuf = [];
+    
+    window.addEventListener('deviceorientation', (e) => {
+      let heading = e.webkitCompassHeading;
+      const accuracy = e.webkitCompassAccuracy;
+      
+      if (heading === undefined && e.alpha !== null) {
+        heading = e.alpha;
+      }
+      
+      if (heading === undefined || heading === null) return;
+      
+      const now = Date.now();
+      const dt = Math.max(16, now - lastTime);
+      lastTime = now;
+      
+      let value = 50;
+      
+      if (lastHeading !== null) {
+        let delta = Math.abs(heading - lastHeading);
+        if (delta > 180) delta = 360 - delta;
+        const ratePerSec = (delta / dt) * 1000;
+        
+        driftBuf.push(ratePerSec);
+        if (driftBuf.length > 8) driftBuf.shift();
+        
+        const avgDrift = driftBuf.reduce((a, b) => a + b, 0) / driftBuf.length;
+        value = 50 + avgDrift * 1.5;
+      }
+      
+      // iOS compass accuracy: smaller positive = more accurate
+      // Negative or very large = magnetic interference
+      if (accuracy !== undefined && accuracy !== null) {
+        if (accuracy < 0 || accuracy > 30) {
+          value += 25;
+        } else {
+          value += Math.min(accuracy, 20) * 0.5;
+        }
+      }
+      
+      lastHeading = heading;
+      handleReading(value);
+    }, true);
+    
+    sensorType = 'COMPASS';
+  }
+  
+  // ============ READING HANDLER ============
+  function handleReading(value) {
+    rawValue = value;
+    sampleCount++;
+    
+    const now = Date.now();
+    if (now - lastRateUpdate >= 1000) {
+      els.rateStat.textContent = sampleCount + 'Hz';
+      sampleCount = 0;
+      lastRateUpdate = now;
+    }
+  }
+  
+  // ============ RENDER LOOP ============
+  function render() {
+    // Smooth display value
+    displayValue += (rawValue - displayValue) * 0.22;
+    
+    if (baseline === null) {
+      els.valueDisplay.textContent = String(Math.round(displayValue)).padStart(3, '0');
+      requestAnimationFrame(render);
+      return;
+    }
+    
+    const delta = displayValue - baseline;
+    const absDelta = Math.abs(delta);
+    
+    if (absDelta > peak) {
+      peak = absDelta;
+      els.peakStat.textContent = peak.toFixed(0);
+    }
+    
+    els.valueDisplay.textContent = String(Math.round(displayValue)).padStart(3, '0');
+    els.baselineStat.textContent = baseline.toFixed(0);
+    els.deltaStat.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(0);
+    
+    // Thresholds (normalized units)
+    const T_FAINT = 3;
+    const T_WARN = 10;
+    const T_ALERT = 25;
+    const T_MAX = 60;
+    
+    // Gauge fill (270° arc max)
+    const norm = Math.min(1, absDelta / T_MAX);
+    const dashLen = norm * 386;
+    els.gaugeFill.setAttribute('stroke-dasharray', `${dashLen} 800`);
+    
+    // Needle
+    const needleAngle = -135 + (norm * 270);
+    els.needle.style.transform = `rotate(${needleAngle}deg)`;
+    
+    // State
+    let state, statusText;
+    
+    if (absDelta > T_ALERT) {
+      state = 'alert';
+      statusText = '⚠ مەعدەنى ferromagnetic بەهێز نزیکە';
+      maybeBeep('alert', 1200, 180, 0.07);
+    } else if (absDelta > T_WARN) {
+      state = 'warn';
+      statusText = '○ ئاسەوارى مەعدەن دۆزرایەوە';
+      maybeBeep('warn', 900, 380, 0.06);
+    } else if (absDelta > T_FAINT) {
+      state = 'faint';
+      statusText = '· سیگناڵى لاواز';
+      maybeBeep('faint', 600, 700, 0.04);
+    } else {
+      state = 'normal';
+      statusText = '✓ گۆڕەپانى ئاسایى';
+    }
+    
+    // Apply state classes
+    const isAlert = state === 'alert';
+    const isWarn = state === 'warn';
+    els.valueDisplay.classList.toggle('alert', isAlert);
+    els.valueDisplay.classList.toggle('warn', isWarn);
+    els.gaugeFill.classList.toggle('alert', isAlert);
+    els.gaugeFill.classList.toggle('warn', isWarn);
+    els.statusBar.classList.toggle('alert', isAlert);
+    els.statusBar.classList.toggle('warn', isWarn);
+    els.statusBar.textContent = statusText;
+    
+    requestAnimationFrame(render);
+  }
+  
+  // ============ CALIBRATION ============
+  function calibrate() {
+    baseline = displayValue;
+    peak = 0;
+    els.peakStat.textContent = '0';
+    els.statusBar.textContent = '✓ ڕێکخرا — ئێستا دەستپێبکە بە گەڕان';
+    els.statusBar.classList.remove('alert', 'warn');
+    beep(900, 0.1);
+    setTimeout(() => beep(1300, 0.13), 130);
+  }
+  
+  // ============ EVENT HANDLERS ============
+  els.startBtn.addEventListener('click', async () => {
+    els.startBtn.disabled = true;
+    els.startBtn.textContent = 'چاوەڕێ بکە...';
+    
+    initAudio();
+    
+    const granted = await requestPermissions();
+    if (!granted) {
+      els.startBtn.disabled = false;
+      els.startBtn.textContent = 'دەستپێکردنى ئامێر';
+      els.statusBar.textContent = '⚠ پێویستە ڕێگەى هەستەوەرەکان بدەیت';
+      els.statusBar.classList.add('alert');
+      return;
+    }
+    
+    const hasNative = await tryNativeMagnetometer();
+    if (!hasNative) {
+      setupCompassFallback();
+    }
+    
+    els.startBtn.classList.add('hidden');
+    els.calibrateBtn.classList.remove('hidden');
+    els.muteBtn.classList.remove('hidden');
+    els.statusDot.classList.add('live');
+    els.statusLabel.textContent = 'LIVE · ' + (sensorType || 'SENSOR');
+    els.statusBar.textContent = 'ئامێر کارا — دوگمەى "ڕێکخستن" لێ بدە';
+    els.statusBar.classList.remove('alert');
+    
+    requestAnimationFrame(render);
+  });
+  
+  els.calibrateBtn.addEventListener('click', calibrate);
+  
+  els.muteBtn.addEventListener('click', () => {
+    muted = !muted;
+    els.muteBtn.textContent = muted ? 'دەنگ · کوژاوە' : 'دەنگ · کارا';
+  });
+})();
+</script>
+</body>
+</html>
