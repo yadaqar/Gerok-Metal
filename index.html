@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>MAGNETO — دۆزەرەوەى مەعدەنى ئاسن</title>
+<title>MAGNETO v2.0 — Sensor Fusion Detector</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0c10;
-    --bg-elev: #131720;
-    --bg-elev-2: #1a2030;
+    --bg: #07090d;
+    --bg-elev: #11151e;
+    --bg-elev-2: #181d2a;
     --line: #1f2533;
     --line-bright: #2a3344;
     --amber: #ffb84d;
     --amber-dim: #8a6021;
     --green: #4dff9e;
-    --green-dim: #1f5c3a;
+    --cyan: #4dd0ff;
     --red: #ff4d6d;
     --text: #e8eaed;
     --text-dim: #6b7280;
@@ -27,340 +27,271 @@
     --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
     --body: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
   }
-  
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  
-  html, body {
-    background: var(--bg);
-    overscroll-behavior: none;
-  }
-  
+  html, body { background: var(--bg); overscroll-behavior: none; }
   body {
     font-family: var(--body);
     color: var(--text);
     min-height: 100vh;
-    padding: max(env(safe-area-inset-top), 12px) 16px max(env(safe-area-inset-bottom), 20px);
+    padding: max(env(safe-area-inset-top), 12px) 14px max(env(safe-area-inset-bottom), 20px);
     background-image: 
-      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 184, 77, 0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 184, 77, 0.04) 0%, transparent 60%),
       repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.006) 3px, rgba(255,255,255,0.006) 4px);
     -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
+    user-select: none; -webkit-user-select: none;
     overflow-x: hidden;
   }
+  .frame { max-width: 460px; margin: 0 auto; }
   
-  .frame {
-    max-width: 440px;
-    margin: 0 auto;
-  }
-  
-  /* === Header === */
   .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 4px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 4px 12px;
     border-bottom: 1px solid var(--line);
-    margin-bottom: 18px;
+    margin-bottom: 16px;
   }
-  
   .logo {
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    font-weight: 700;
-    color: var(--amber);
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.22em; font-weight: 700; color: var(--amber);
   }
-  
-  .logo::before {
-    content: '◢ ';
-    color: var(--amber-dim);
-  }
-  
+  .logo::before { content: '◢ '; color: var(--amber-dim); }
+  .logo .ver { color: var(--text-faint); font-weight: 500; margin-right: 4px; }
   .status-pill {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: 0.12em; color: var(--text-dim);
+    text-transform: uppercase; font-weight: 500;
   }
-  
   .dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--text-faint);
-    transition: all 0.3s;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-faint); transition: all 0.3s;
   }
-  
   .dot.live {
     background: var(--green);
-    box-shadow: 0 0 10px var(--green), 0 0 4px var(--green);
+    box-shadow: 0 0 8px var(--green), 0 0 3px var(--green);
     animation: pulse 1.4s infinite;
   }
-  
   @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.85); }
+    50% { opacity: 0.5; transform: scale(0.82); }
   }
   
-  /* === Disclaimer === */
   .disclaimer {
     background: linear-gradient(180deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
     border: 1px solid var(--line);
     border-right: 3px solid var(--amber);
-    border-radius: 8px;
-    padding: 13px 15px;
-    margin-bottom: 22px;
-    font-size: 12.5px;
-    line-height: 1.7;
+    border-radius: 7px;
+    padding: 11px 14px;
+    margin-bottom: 18px;
+    font-size: 12px; line-height: 1.7;
   }
+  .disclaimer strong { color: var(--amber); font-weight: 600; }
   
-  .disclaimer strong {
-    color: var(--amber);
-    font-weight: 600;
-  }
-  
-  /* === Gauge === */
   .gauge {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1;
-    max-width: 340px;
-    margin: 0 auto 18px;
+    position: relative; width: 100%;
+    aspect-ratio: 1; max-width: 320px;
+    margin: 0 auto 12px;
   }
-  
-  .gauge svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-  
-  .gauge-track {
-    fill: none;
-    stroke: var(--line);
-    stroke-width: 6;
-    opacity: 0.6;
-  }
-  
-  .gauge-fill {
-    fill: none;
-    stroke: var(--green);
-    stroke-width: 6;
+  .gauge svg { width: 100%; height: 100%; display: block; }
+  .g-track { fill: none; stroke: var(--line); stroke-width: 5; opacity: 0.6; }
+  .g-fill {
+    fill: none; stroke: var(--green); stroke-width: 5;
     stroke-linecap: round;
-    transition: stroke-dashoffset 0.18s ease-out, stroke 0.3s;
-    filter: drop-shadow(0 0 8px currentColor);
+    transition: stroke-dashoffset 0.15s ease-out, stroke 0.3s;
+    filter: drop-shadow(0 0 6px currentColor);
   }
-  
-  .gauge-fill.warn { stroke: var(--amber); }
-  .gauge-fill.alert { stroke: var(--red); }
-  
-  .tick {
-    stroke: var(--line-bright);
-    stroke-width: 1.2;
-  }
-  .tick.major {
-    stroke: var(--text-dim);
-    stroke-width: 1.8;
-  }
-  
-  .needle-line {
-    stroke: var(--amber);
-    stroke-width: 2.2;
+  .g-fill.warn { stroke: var(--amber); }
+  .g-fill.alert { stroke: var(--red); }
+  .tick { stroke: var(--line-bright); stroke-width: 1; }
+  .tick.major { stroke: var(--text-dim); stroke-width: 1.5; }
+  .needle {
+    stroke: var(--amber); stroke-width: 2;
     stroke-linecap: round;
     transform-origin: 100px 100px;
-    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-    filter: drop-shadow(0 0 6px var(--amber));
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 0 5px var(--amber));
   }
-  
   .needle-hub {
-    fill: var(--bg-elev);
-    stroke: var(--amber);
-    stroke-width: 2;
+    fill: var(--bg-elev); stroke: var(--amber); stroke-width: 1.8;
   }
-  
   .gauge-center {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    padding-bottom: 8%;
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none; padding-bottom: 6%;
   }
-  
   .value {
-    font-family: var(--mono);
-    font-size: 60px;
-    font-weight: 700;
-    color: var(--green);
-    line-height: 1;
+    font-family: var(--mono); font-size: 54px;
+    font-weight: 700; color: var(--green); line-height: 1;
     letter-spacing: -0.03em;
-    transition: color 0.3s;
+    transition: color 0.3s, text-shadow 0.3s;
     font-variant-numeric: tabular-nums;
-    text-shadow: 0 0 20px currentColor;
+    text-shadow: 0 0 16px currentColor;
   }
-  
   .value.warn { color: var(--amber); }
   .value.alert { color: var(--red); }
-  
   .value-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.2em;
-    margin-top: 8px;
-    text-transform: uppercase;
-    font-weight: 500;
+    font-family: var(--mono); font-size: 9px;
+    color: var(--text-dim); letter-spacing: 0.18em;
+    margin-top: 6px; text-transform: uppercase; font-weight: 500;
   }
   
-  /* === Status bar === */
-  .status-bar {
-    background: var(--bg-elev);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px 18px;
+  .waterfall {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 7px; padding: 10px 12px 12px;
     margin-bottom: 14px;
-    text-align: center;
-    font-size: 14px;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-    font-weight: 500;
+  }
+  .waterfall-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px; font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.12em; color: var(--text-dim); text-transform: uppercase;
+  }
+  .waterfall-canvas {
+    width: 100%; height: 56px; display: block;
+    border-radius: 4px; background: #050709;
   }
   
+  .status-bar {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 9px; padding: 12px 16px;
+    margin-bottom: 12px; text-align: center;
+    font-size: 13.5px; min-height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s; font-weight: 500;
+  }
   .status-bar.alert {
     border-color: var(--red);
-    background: rgba(255, 77, 109, 0.08);
-    color: var(--red);
+    background: rgba(255, 77, 109, 0.08); color: var(--red);
   }
   .status-bar.warn {
     border-color: var(--amber);
-    background: rgba(255, 184, 77, 0.06);
-    color: var(--amber);
+    background: rgba(255, 184, 77, 0.06); color: var(--amber);
   }
   
-  /* === Controls === */
   .controls {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 22px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 16px;
   }
-  
   .btn {
-    background: var(--bg-elev);
-    color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 15px 16px;
-    font-family: var(--body);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.12s ease;
+    background: var(--bg-elev); color: var(--text);
+    border: 1px solid var(--line); border-radius: 9px;
+    padding: 13px 14px; font-family: var(--body);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.12s ease;
     -webkit-tap-highlight-color: transparent;
   }
-  
-  .btn:active {
-    transform: scale(0.97);
-    background: var(--line);
-  }
-  
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
+  .btn:active { transform: scale(0.97); background: var(--line); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn.primary {
-    background: var(--amber);
-    color: #0a0c10;
-    border-color: var(--amber);
-    grid-column: 1 / -1;
+    background: var(--amber); color: #0a0c10;
+    border-color: var(--amber); grid-column: 1 / -1;
     font-weight: 700;
-    box-shadow: 0 0 20px rgba(255, 184, 77, 0.2);
+    box-shadow: 0 0 16px rgba(255, 184, 77, 0.18);
+  }
+  .btn.primary:active { background: var(--amber-dim); color: var(--text); }
+  
+  .diag {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 9px; padding: 12px; margin-bottom: 12px;
+  }
+  .diag-title {
+    font-family: var(--mono); font-size: 9px;
+    color: var(--text-dim); letter-spacing: 0.15em;
+    text-transform: uppercase; margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .diag-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .diag-cell {
+    background: var(--bg-elev-2); border-radius: 6px;
+    padding: 9px 8px; text-align: center;
+  }
+  .diag-label {
+    font-family: var(--mono); font-size: 8.5px;
+    color: var(--text-dim); letter-spacing: 0.08em;
+    margin-bottom: 3px; text-transform: uppercase;
+  }
+  .diag-value {
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .bars {
+    display: flex; gap: 2px; align-items: flex-end;
+    height: 22px; margin-top: 4px; justify-content: center;
+  }
+  .bar {
+    flex: 1; background: var(--line); border-radius: 1px;
+    transition: background 0.15s; max-width: 5px;
+  }
+  .bar.lit { background: var(--green); box-shadow: 0 0 3px var(--green); }
+  .bar.lit-warn { background: var(--amber); box-shadow: 0 0 3px var(--amber); }
+  .bar.lit-alert { background: var(--red); box-shadow: 0 0 3px var(--red); }
+  
+  .analysis {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 9px; padding: 12px 14px; margin-bottom: 12px;
+  }
+  .analysis-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px;
+  }
+  .analysis-row:last-child { border-bottom: none; }
+  .analysis-row .label {
+    color: var(--text-dim); font-family: var(--mono);
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .analysis-row .val {
+    font-family: var(--mono); font-weight: 600; color: var(--text);
+  }
+  .analysis-row .val.active { color: var(--green); }
+  .analysis-row .val.warn { color: var(--amber); }
+  .analysis-row .val.alert { color: var(--red); }
+  
+  .gps-panel {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 9px; padding: 12px 14px; margin-bottom: 12px;
+  }
+  .gps-coords {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--cyan); margin: 6px 0 10px;
+    direction: ltr; text-align: left;
+  }
+  .gps-mark-btn {
+    width: 100%; background: var(--bg-elev-2);
+    border: 1px solid var(--cyan); color: var(--cyan);
+    padding: 10px; border-radius: 7px;
+    font-size: 12px; font-weight: 500; margin-bottom: 8px;
+    font-family: var(--body); cursor: pointer;
+  }
+  .gps-mark-btn:active { background: var(--line); }
+  .gps-list {
+    max-height: 120px; overflow-y: auto;
+    font-family: var(--mono); font-size: 10.5px;
+  }
+  .gps-entry {
+    padding: 6px 8px; background: var(--bg-elev-2);
+    border-radius: 5px; margin-bottom: 4px;
+    display: flex; justify-content: space-between; direction: ltr;
+  }
+  .gps-entry .gps-strength { color: var(--amber); font-weight: 600; }
+  .gps-empty {
+    color: var(--text-faint); text-align: center;
+    padding: 12px; font-size: 11px; font-family: var(--body);
   }
   
-  .btn.primary:active {
-    background: var(--amber-dim);
-    color: var(--text);
-  }
-  
-  /* === Stats === */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-    margin-bottom: 22px;
-  }
-  
-  .stat {
-    background: var(--bg-elev);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 10px 6px;
-    text-align: center;
-  }
-  
-  .stat-label {
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-  
-  .stat-value {
-    font-family: var(--mono);
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    font-variant-numeric: tabular-nums;
-  }
-  
-  /* === Info === */
   .info {
-    background: var(--bg-elev);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 16px 18px;
-    font-size: 13px;
-    line-height: 1.85;
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 9px; padding: 14px 16px;
+    font-size: 12.5px; line-height: 1.8;
   }
-  
   .info h3 {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    color: var(--amber);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    font-family: var(--mono);
-    font-weight: 600;
+    font-size: 9.5px; letter-spacing: 0.18em;
+    color: var(--amber); text-transform: uppercase;
+    margin-bottom: 8px; font-family: var(--mono); font-weight: 600;
   }
-  
-  .info ol {
-    padding-right: 20px;
-  }
-  
-  .info li {
-    margin-bottom: 4px;
-    color: var(--text);
-  }
-  
-  .info li::marker {
-    color: var(--amber);
-    font-family: var(--mono);
-    font-weight: 600;
-  }
+  .info ol { padding-right: 18px; }
+  .info li { margin-bottom: 3px; }
+  .info li::marker { color: var(--amber); font-family: var(--mono); font-weight: 600; }
   
   .hidden { display: none !important; }
 </style>
@@ -368,7 +299,7 @@
 <body>
 <div class="frame">
   <header class="header">
-    <div class="logo">MAGNETO_v1.0</div>
+    <div class="logo"><span class="ver">v2.0</span>MAGNETO·FUSION</div>
     <div class="status-pill">
       <span class="dot" id="statusDot"></span>
       <span id="statusLabel">OFFLINE</span>
@@ -376,27 +307,29 @@
   </header>
   
   <div class="disclaimer">
-    ئەم ئامێرە تەنها <strong>مەعدەنى ferromagnetic</strong> (ئاسن، پۆڵا، نیکڵ) لە دوورى ١–٥ سم دۆزێتەوە. <strong>زێڕ، زیو، مس و ئەلۆمنیۆم نادۆزرێتەوە</strong> — یاسایەکى فیزیایە، نەک کێشەى نەرمەکاڵا.
+    دۆزەرەوەى مەعدەنى ferromagnetic بە <strong>sensor fusion</strong>: gyroscope جوڵانى مۆبایل ڕەش دەکاتەوە، تەنها تێکچوونى مەگناتیسى ڕاستەقینە نیشان دەدات. تەنها <strong>ئاسن، پۆڵا، نیکڵ</strong>ـى نزیک دۆزراوە — زێڕ، زیو، مس دۆزراوە نییە (یاسایەکى فیزیایە).
   </div>
   
-  <div class="gauge">
+  <div class="gauge" id="gaugeContainer">
     <svg viewBox="0 0 200 200">
-      <circle class="gauge-track" cx="100" cy="100" r="82"
-              stroke-dasharray="386 800"
-              transform="rotate(135 100 100)"/>
-      <circle class="gauge-fill" id="gaugeFill" cx="100" cy="100" r="82"
-              stroke-dasharray="0 800"
-              transform="rotate(135 100 100)"/>
+      <circle class="g-track" cx="100" cy="100" r="82" stroke-dasharray="386 800" transform="rotate(135 100 100)"/>
+      <circle class="g-fill" id="gaugeFill" cx="100" cy="100" r="82" stroke-dasharray="0 800" transform="rotate(135 100 100)"/>
       <g id="ticks"></g>
-      <line class="needle-line" id="needle" 
-            x1="100" y1="100" x2="100" y2="35"/>
-      <circle class="needle-hub" cx="100" cy="100" r="7"/>
+      <line class="needle" id="needle" x1="100" y1="100" x2="100" y2="35"/>
+      <circle class="needle-hub" cx="100" cy="100" r="6"/>
     </svg>
-    
     <div class="gauge-center">
       <div class="value" id="valueDisplay">000</div>
-      <div class="value-label">UNITS · NORMALIZED</div>
+      <div class="value-label">SIGNAL · NORMALIZED</div>
     </div>
+  </div>
+  
+  <div class="waterfall">
+    <div class="waterfall-head">
+      <span>SIGNAL HISTORY · 8s</span>
+      <span id="waterfallStats">peak: 0</span>
+    </div>
+    <canvas class="waterfall-canvas" id="waterfall" width="800" height="112"></canvas>
   </div>
   
   <div class="status-bar" id="statusBar">دوگمەى دەستپێکردن لێ بدە</div>
@@ -407,34 +340,74 @@
     <button class="btn hidden" id="muteBtn">دەنگ · کارا</button>
   </div>
   
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-label">BASE</div>
-      <div class="stat-value" id="baselineStat">--</div>
+  <div class="diag hidden" id="diagPanel">
+    <div class="diag-title">
+      <span>SENSOR DIAGNOSTICS</span>
+      <span id="sampleRate">0 Hz</span>
     </div>
-    <div class="stat">
-      <div class="stat-label">Δ DELTA</div>
-      <div class="stat-value" id="deltaStat">--</div>
+    <div class="diag-grid">
+      <div class="diag-cell">
+        <div class="diag-label">MOTION</div>
+        <div class="diag-value" id="motionVal">0.0</div>
+        <div class="bars" id="motionBars"></div>
+      </div>
+      <div class="diag-cell">
+        <div class="diag-label">COMPASS</div>
+        <div class="diag-value" id="compassVal">--°</div>
+        <div class="bars" id="compassBars"></div>
+      </div>
+      <div class="diag-cell">
+        <div class="diag-label">SIGNAL</div>
+        <div class="diag-value" id="signalVal">0.0</div>
+        <div class="bars" id="signalBars"></div>
+      </div>
     </div>
-    <div class="stat">
-      <div class="stat-label">PEAK</div>
-      <div class="stat-value" id="peakStat">--</div>
+  </div>
+  
+  <div class="analysis hidden" id="analysisPanel">
+    <div class="analysis-row">
+      <span class="label">INTENSITY</span>
+      <span class="val" id="intensityVal">—</span>
     </div>
-    <div class="stat">
-      <div class="stat-label">RATE</div>
-      <div class="stat-value" id="rateStat">0Hz</div>
+    <div class="analysis-row">
+      <span class="label">TREND</span>
+      <span class="val" id="trendVal">—</span>
+    </div>
+    <div class="analysis-row">
+      <span class="label">PROFILE</span>
+      <span class="val" id="profileVal">—</span>
+    </div>
+    <div class="analysis-row">
+      <span class="label">NOISE FLOOR</span>
+      <span class="val" id="noiseVal">—</span>
+    </div>
+    <div class="analysis-row">
+      <span class="label">SNR</span>
+      <span class="val" id="snrVal">— dB</span>
+    </div>
+  </div>
+  
+  <div class="gps-panel hidden" id="gpsPanel">
+    <div class="diag-title" style="margin-bottom: 6px;">
+      <span>GPS · DETECTION LOG</span>
+      <span id="gpsAccuracy">—</span>
+    </div>
+    <div class="gps-coords" id="gpsCoords">acquiring location...</div>
+    <button class="gps-mark-btn" id="markBtn">📍 MARK THIS LOCATION</button>
+    <div class="gps-list" id="gpsList">
+      <div class="gps-empty">no marks yet</div>
     </div>
   </div>
   
   <div class="info">
-    <h3>ڕێنماى بەکارهێنان</h3>
+    <h3>چۆن کار دەکات</h3>
     <ol>
-      <li>دوگمەى "دەستپێکردن" لێ بدە و ڕێگە بدە بە هەستەوەرەکان</li>
-      <li>ئایفۆن دوور لە مەعدەن، تەلى کارەبا و مۆبایلى دیکە ڕابگرە</li>
-      <li>دوگمەى "ڕێکخستن" لێ بدە بۆ دانانى بنەڕەت</li>
-      <li>ئایفۆن بە هێواشى نزیک شوێنە گومانلێکراوەکە بکەرەوە</li>
-      <li>پشتى ئایفۆن (لاى کامێرا) بەرەو شوێنەکە ڕابگرە، چونکە مەگنەتۆمیتەر لەوێیە</li>
-      <li>ئەگەر Δ DELTA بەرز ببێتەوە و دەنگ دەکات، مەعدەنى ئاسن لەوێیە</li>
+      <li>دوگمەى "دەستپێکردن" لێ بدە و ڕێگەى هەستەوەرەکان بدە</li>
+      <li>ئایفۆن لە شوێنێکى ئاسایى ڕابگرە و دوگمەى "ڕێکخستن" لێ بدە</li>
+      <li>پشتى ئایفۆن (لاى کامێرا) بەرەو خوار ڕابگرە — مەگنەتۆمیتەر لەوێیە</li>
+      <li>بە هێواشى مۆبایل بسوڕێنە بەسەر شوێنەکەدا</li>
+      <li>دەنگى تیقیق بەرز دەبێتەوە کاتێک ئاسن نزیک ببێتەوە</li>
+      <li>ئەگەر دەتەوێت شوێنەکە تۆمار بکەیت، دوگمەى "MARK" لێ بدە</li>
     </ol>
   </div>
 </div>
@@ -443,47 +416,66 @@
 (() => {
   'use strict';
   
-  const $ = id => document.getElementById(id);
-  const els = {
-    startBtn: $('startBtn'),
-    calibrateBtn: $('calibrateBtn'),
-    muteBtn: $('muteBtn'),
-    valueDisplay: $('valueDisplay'),
-    needle: $('needle'),
-    gaugeFill: $('gaugeFill'),
-    statusBar: $('statusBar'),
-    statusDot: $('statusDot'),
-    statusLabel: $('statusLabel'),
-    baselineStat: $('baselineStat'),
-    deltaStat: $('deltaStat'),
-    peakStat: $('peakStat'),
-    rateStat: $('rateStat'),
-    ticks: $('ticks'),
+  const CFG = {
+    PRED_CORRECTION: 0.025,
+    SMOOTH_ALPHA: 0.18,
+    NOISE_WINDOW: 30,
+    DERIVATIVE_WINDOW: 5,
+    T_FAINT: 4,
+    T_WARN: 12,
+    T_ALERT: 28,
+    T_MAX: 70,
+    BASE_FREQ: 220,
+    PEAK_FREQ: 880,
+    MAX_VOLUME: 0.18,
+    WATERFALL_SAMPLES: 200,
   };
   
-  // State
-  let baseline = null;
-  let rawValue = 50;
-  let displayValue = 50;
-  let peak = 0;
-  let muted = false;
-  let audioCtx = null;
-  let sampleCount = 0;
-  let lastRateUpdate = Date.now();
-  let lastBeepByState = {};
-  let sensorType = null;
+  const state = {
+    rotationRate: { alpha: 0, beta: 0, gamma: 0 },
+    compass: null,
+    compassAccuracy: null,
+    predictedCompass: null,
+    residualSignal: 0,
+    rawSignal: 0,
+    smoothedSignal: 0,
+    baseline: null,
+    history: [],
+    waterfallBuf: new Array(CFG.WATERFALL_SAMPLES).fill(0),
+    peak: 0,
+    noiseFloor: 0,
+    sampleCount: 0,
+    lastRateUpdate: Date.now(),
+    motionMagnitude: 0,
+    gpsCoords: null,
+    gpsAccuracy: null,
+    marks: JSON.parse(localStorage.getItem('magneto_marks') || '[]'),
+    audioCtx: null,
+    osc: null,
+    gainNode: null,
+    muted: false,
+    sensorType: null,
+    running: false,
+  };
   
-  // ============ TICK MARKS ============
+  const $ = id => document.getElementById(id);
+  const els = {};
+  ['startBtn','calibrateBtn','muteBtn','valueDisplay','needle','gaugeFill',
+   'gaugeContainer','statusBar','statusDot','statusLabel','ticks','waterfall',
+   'waterfallStats','sampleRate','motionVal','compassVal','signalVal',
+   'motionBars','compassBars','signalBars','intensityVal','trendVal',
+   'profileVal','noiseVal','snrVal','diagPanel','analysisPanel','gpsPanel',
+   'gpsCoords','gpsAccuracy','markBtn','gpsList'].forEach(k => els[k] = $(k));
+  
+  // Build gauge ticks
   function buildTicks() {
     const svgNS = 'http://www.w3.org/2000/svg';
-    // Gauge sweep is 270° from -135° (bottom-left) to +135° (bottom-right)
     for (let i = 0; i <= 10; i++) {
       const angle = -135 + (i * 27);
       const rad = (angle - 90) * Math.PI / 180;
       const major = i % 2 === 0;
       const innerR = major ? 68 : 72;
       const outerR = 78;
-      
       const line = document.createElementNS(svgNS, 'line');
       line.setAttribute('x1', 100 + Math.cos(rad) * innerR);
       line.setAttribute('y1', 100 + Math.sin(rad) * innerR);
@@ -495,234 +487,485 @@
   }
   buildTicks();
   
-  // ============ AUDIO ============
+  function buildBars(container, count = 10) {
+    for (let i = 0; i < count; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = (4 + i * 1.8) + 'px';
+      container.appendChild(bar);
+    }
+  }
+  buildBars(els.motionBars);
+  buildBars(els.compassBars);
+  buildBars(els.signalBars);
+  
+  // ─── AUDIO ENGINE ───
   function initAudio() {
-    if (audioCtx) return;
+    if (state.audioCtx) return;
     try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      state.osc = state.audioCtx.createOscillator();
+      state.osc.type = 'sine';
+      state.osc.frequency.value = CFG.BASE_FREQ;
+      state.gainNode = state.audioCtx.createGain();
+      state.gainNode.gain.value = 0;
+      const filter = state.audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 2000;
+      filter.Q.value = 1.5;
+      state.osc.connect(filter);
+      filter.connect(state.gainNode);
+      state.gainNode.connect(state.audioCtx.destination);
+      state.osc.start();
     } catch (e) {
-      console.warn('AudioContext unavailable:', e);
+      console.warn('Audio init failed:', e);
     }
   }
   
-  function beep(freq, duration) {
-    if (muted || !audioCtx) return;
-    const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.15, now + 0.005);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + duration + 0.05);
+  function clickSound(intensity) {
+    if (state.muted || !state.audioCtx) return;
+    const now = state.audioCtx.currentTime;
+    const tickOsc = state.audioCtx.createOscillator();
+    const tickGain = state.audioCtx.createGain();
+    tickOsc.type = 'triangle';
+    tickOsc.frequency.value = 1200 + intensity * 800;
+    tickGain.gain.setValueAtTime(0, now);
+    tickGain.gain.linearRampToValueAtTime(0.08, now + 0.001);
+    tickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+    tickOsc.connect(tickGain);
+    tickGain.connect(state.audioCtx.destination);
+    tickOsc.start(now);
+    tickOsc.stop(now + 0.05);
   }
   
-  function maybeBeep(state, freq, interval, duration = 0.08) {
+  function updateAudio(absSignal) {
+    if (!state.audioCtx || !state.osc) return;
+    const now = state.audioCtx.currentTime;
+    const norm = Math.min(1, absSignal / CFG.T_MAX);
+    const freq = CFG.BASE_FREQ + (CFG.PEAK_FREQ - CFG.BASE_FREQ) * norm;
+    state.osc.frequency.setTargetAtTime(freq, now, 0.04);
+    let vol = 0;
+    if (absSignal > CFG.T_FAINT && !state.muted) {
+      const above = (absSignal - CFG.T_FAINT) / (CFG.T_MAX - CFG.T_FAINT);
+      vol = CFG.MAX_VOLUME * Math.min(1, above);
+    }
+    state.gainNode.gain.setTargetAtTime(vol, now, 0.05);
+  }
+  
+  let lastClickTime = 0;
+  function maybeClick(absSignal) {
+    if (state.muted || absSignal < CFG.T_FAINT) return;
+    const norm = Math.min(1, absSignal / CFG.T_MAX);
+    const clickRate = 1.5 + norm * 8.5;
+    const interval = 1000 / clickRate;
     const now = Date.now();
-    if (!lastBeepByState[state] || now - lastBeepByState[state] >= interval) {
-      lastBeepByState[state] = now;
-      beep(freq, duration);
+    if (now - lastClickTime >= interval) {
+      lastClickTime = now;
+      clickSound(norm);
     }
   }
   
-  // ============ SENSOR PERMISSIONS ============
+  // ─── PERMISSIONS ───
   async function requestPermissions() {
     const reqs = [];
-    
     if (typeof DeviceMotionEvent !== 'undefined' &&
         typeof DeviceMotionEvent.requestPermission === 'function') {
-      reqs.push(DeviceMotionEvent.requestPermission().catch(e => 'error'));
+      reqs.push(DeviceMotionEvent.requestPermission().catch(() => 'error'));
     }
     if (typeof DeviceOrientationEvent !== 'undefined' &&
         typeof DeviceOrientationEvent.requestPermission === 'function') {
-      reqs.push(DeviceOrientationEvent.requestPermission().catch(e => 'error'));
+      reqs.push(DeviceOrientationEvent.requestPermission().catch(() => 'error'));
     }
-    
     if (reqs.length === 0) return true;
-    
     const results = await Promise.all(reqs);
     return results.some(r => r === 'granted');
   }
   
-  // ============ SENSORS ============
-  
-  // Best: Native Magnetometer API (Android Chrome)
-  async function tryNativeMagnetometer() {
-    if (!('Magnetometer' in window)) return false;
-    try {
-      const sensor = new Magnetometer({ frequency: 30, referenceFrame: 'device' });
-      sensor.addEventListener('reading', () => {
-        const mag = Math.sqrt(sensor.x ** 2 + sensor.y ** 2 + sensor.z ** 2);
-        handleReading(mag);
-      });
-      sensor.addEventListener('error', e => console.warn('Mag sensor error:', e.error));
-      sensor.start();
-      sensorType = 'MAG·NATIVE';
-      return true;
-    } catch (e) {
-      console.log('Native magnetometer not available');
-      return false;
+  // ─── SENSOR FUSION ───
+  // Key idea: compare gyro-predicted compass heading vs actual compass.
+  // When they diverge, that's magnetic interference (metal nearby).
+  function updateFusion(dt) {
+    if (state.compass === null) return;
+    if (state.predictedCompass === null) {
+      state.predictedCompass = state.compass;
+      return;
     }
+    
+    const rotZ = state.rotationRate.alpha || 0;
+    state.predictedCompass = ((state.predictedCompass + rotZ * dt) % 360 + 360) % 360;
+    
+    let residual = state.compass - state.predictedCompass;
+    if (residual > 180) residual -= 360;
+    if (residual < -180) residual += 360;
+    
+    // Slowly correct prediction toward actual (anti-drift)
+    state.predictedCompass = ((state.predictedCompass + residual * CFG.PRED_CORRECTION) % 360 + 360) % 360;
+    
+    // Motion magnitude (total angular velocity from gyro)
+    const rrx = state.rotationRate.alpha || 0;
+    const rry = state.rotationRate.beta || 0;
+    const rrz = state.rotationRate.gamma || 0;
+    state.motionMagnitude = Math.sqrt(rrx*rrx + rry*rry + rrz*rrz);
+    
+    // Signal = residual scaled up
+    state.residualSignal = Math.abs(residual) * 8;
+    
+    // Incorporate compass accuracy (iOS)
+    if (state.compassAccuracy !== null) {
+      if (state.compassAccuracy < 0 || state.compassAccuracy > 40) {
+        state.residualSignal += 15;
+      } else if (state.compassAccuracy > 15) {
+        state.residualSignal += (state.compassAccuracy - 15) * 0.4;
+      }
+    }
+    
+    state.rawSignal = state.residualSignal;
   }
   
-  // Fallback for iOS: use compass heading instability as proxy
-  function setupCompassFallback() {
-    let lastHeading = null;
-    let lastTime = Date.now();
-    let driftBuf = [];
+  function setupSensors() {
+    let lastMotionTime = performance.now();
+    window.addEventListener('devicemotion', (e) => {
+      if (e.rotationRate) {
+        state.rotationRate.alpha = e.rotationRate.alpha || 0;
+        state.rotationRate.beta = e.rotationRate.beta || 0;
+        state.rotationRate.gamma = e.rotationRate.gamma || 0;
+      }
+      const now = performance.now();
+      const dt = (now - lastMotionTime) / 1000;
+      lastMotionTime = now;
+      updateFusion(dt);
+      state.sampleCount++;
+    }, true);
     
     window.addEventListener('deviceorientation', (e) => {
       let heading = e.webkitCompassHeading;
       const accuracy = e.webkitCompassAccuracy;
-      
       if (heading === undefined && e.alpha !== null) {
-        heading = e.alpha;
+        heading = 360 - e.alpha;
       }
-      
-      if (heading === undefined || heading === null) return;
-      
-      const now = Date.now();
-      const dt = Math.max(16, now - lastTime);
-      lastTime = now;
-      
-      let value = 50;
-      
-      if (lastHeading !== null) {
-        let delta = Math.abs(heading - lastHeading);
-        if (delta > 180) delta = 360 - delta;
-        const ratePerSec = (delta / dt) * 1000;
-        
-        driftBuf.push(ratePerSec);
-        if (driftBuf.length > 8) driftBuf.shift();
-        
-        const avgDrift = driftBuf.reduce((a, b) => a + b, 0) / driftBuf.length;
-        value = 50 + avgDrift * 1.5;
+      if (heading !== undefined && heading !== null) {
+        state.compass = heading;
+        state.compassAccuracy = accuracy;
       }
-      
-      // iOS compass accuracy: smaller positive = more accurate
-      // Negative or very large = magnetic interference
-      if (accuracy !== undefined && accuracy !== null) {
-        if (accuracy < 0 || accuracy > 30) {
-          value += 25;
-        } else {
-          value += Math.min(accuracy, 20) * 0.5;
-        }
-      }
-      
-      lastHeading = heading;
-      handleReading(value);
     }, true);
     
-    sensorType = 'COMPASS';
+    // Try native Magnetometer (Android Chrome only)
+    if ('Magnetometer' in window) {
+      try {
+        const sensor = new Magnetometer({ frequency: 30, referenceFrame: 'device' });
+        sensor.addEventListener('reading', () => {
+          const mag = Math.sqrt(sensor.x**2 + sensor.y**2 + sensor.z**2);
+          state.rawSignal = state.baseline === null ? mag : Math.abs(mag - state.baseline);
+        });
+        sensor.start();
+        state.sensorType = 'MAG·DIRECT';
+        return;
+      } catch (e) {}
+    }
+    
+    state.sensorType = 'GYRO·FUSION';
   }
   
-  // ============ READING HANDLER ============
-  function handleReading(value) {
-    rawValue = value;
-    sampleCount++;
+  // ─── SIGNAL ANALYSIS ───
+  function analyzeSignal() {
+    const hist = state.history;
+    if (hist.length < 5) {
+      return {
+        intensity: { text: '—', cls: '' },
+        trend: { text: '—', cls: '' },
+        profile: { text: '—', cls: '' },
+        noise: { text: '—', cls: '' },
+        snr: { text: '— dB', cls: '' }
+      };
+    }
     
-    const now = Date.now();
-    if (now - lastRateUpdate >= 1000) {
-      els.rateStat.textContent = sampleCount + 'Hz';
-      sampleCount = 0;
-      lastRateUpdate = now;
+    const current = state.smoothedSignal - (state.baseline || 0);
+    const absCurrent = Math.abs(current);
+    
+    let intensity;
+    if (absCurrent < CFG.T_FAINT) intensity = { text: 'BACKGROUND', cls: '' };
+    else if (absCurrent < CFG.T_WARN) intensity = { text: 'WEAK', cls: 'active' };
+    else if (absCurrent < CFG.T_ALERT) intensity = { text: 'MODERATE', cls: 'warn' };
+    else intensity = { text: 'STRONG', cls: 'alert' };
+    
+    const win = Math.min(CFG.DERIVATIVE_WINDOW, hist.length - 1);
+    const recent = hist[hist.length - 1];
+    const past = hist[hist.length - 1 - win];
+    const derivative = (recent - past) / win;
+    
+    let trend;
+    if (Math.abs(derivative) < 0.5) trend = { text: 'STABLE ──', cls: '' };
+    else if (derivative > 0) trend = { text: 'RISING ↑', cls: 'warn' };
+    else trend = { text: 'FALLING ↓', cls: '' };
+    
+    const winSize = Math.min(20, hist.length);
+    const recentWin = hist.slice(-winSize);
+    const maxVal = Math.max(...recentWin);
+    const minVal = Math.min(...recentWin);
+    const spread = maxVal - minVal;
+    
+    let profile;
+    if (absCurrent < CFG.T_FAINT) profile = { text: '—', cls: '' };
+    else if (spread > 20 && derivative > 1) profile = { text: 'SHARP·SPIKE', cls: 'alert' };
+    else if (spread > 15) profile = { text: 'BROAD·PEAK', cls: 'warn' };
+    else if (spread < 5 && absCurrent > CFG.T_WARN) profile = { text: 'SUSTAINED', cls: 'warn' };
+    else profile = { text: 'TRANSIENT', cls: '' };
+    
+    const noiseSamples = hist.slice(-CFG.NOISE_WINDOW);
+    const noiseValues = noiseSamples.filter(v => Math.abs(v - (state.baseline || 0)) < CFG.T_FAINT);
+    let noise = 0;
+    if (noiseValues.length > 0) {
+      const mean = noiseValues.reduce((a,b) => a+b, 0) / noiseValues.length;
+      const variance = noiseValues.reduce((a,b) => a + (b-mean)**2, 0) / noiseValues.length;
+      noise = Math.sqrt(variance);
+    }
+    state.noiseFloor = noise;
+    
+    let snr;
+    if (noise < 0.1 || absCurrent < CFG.T_FAINT) {
+      snr = { text: '— dB', cls: '' };
+    } else {
+      const snrDb = 20 * Math.log10(absCurrent / Math.max(0.5, noise));
+      const cls = snrDb > 20 ? 'active' : snrDb > 10 ? 'warn' : '';
+      snr = { text: snrDb.toFixed(1) + ' dB', cls };
+    }
+    
+    return {
+      intensity, trend, profile,
+      noise: { text: noise.toFixed(2), cls: '' },
+      snr
+    };
+  }
+  
+  // ─── WATERFALL ───
+  const wfCtx = els.waterfall.getContext('2d');
+  function drawWaterfall() {
+    const w = els.waterfall.width;
+    const h = els.waterfall.height;
+    wfCtx.fillStyle = 'rgba(5, 7, 9, 1)';
+    wfCtx.fillRect(0, 0, w, h);
+    wfCtx.strokeStyle = '#1a1f2a';
+    wfCtx.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+      const y = (i / 4) * h;
+      wfCtx.beginPath();
+      wfCtx.moveTo(0, y);
+      wfCtx.lineTo(w, y);
+      wfCtx.stroke();
+    }
+    
+    const drawThreshold = (val, color) => {
+      const y = h - (Math.min(val / CFG.T_MAX, 1) * h * 0.9);
+      wfCtx.strokeStyle = color;
+      wfCtx.lineWidth = 1;
+      wfCtx.setLineDash([3, 3]);
+      wfCtx.beginPath();
+      wfCtx.moveTo(0, y);
+      wfCtx.lineTo(w, y);
+      wfCtx.stroke();
+      wfCtx.setLineDash([]);
+    };
+    drawThreshold(CFG.T_WARN, 'rgba(255, 184, 77, 0.25)');
+    drawThreshold(CFG.T_ALERT, 'rgba(255, 77, 109, 0.25)');
+    
+    const buf = state.waterfallBuf;
+    const len = buf.length;
+    const recentMax = Math.max(...buf.slice(-50));
+    let strokeColor = '#4dff9e';
+    if (recentMax > CFG.T_ALERT) strokeColor = '#ff4d6d';
+    else if (recentMax > CFG.T_WARN) strokeColor = '#ffb84d';
+    
+    wfCtx.strokeStyle = strokeColor;
+    wfCtx.lineWidth = 1.5;
+    wfCtx.lineJoin = 'round';
+    wfCtx.shadowColor = strokeColor;
+    wfCtx.shadowBlur = 4;
+    wfCtx.beginPath();
+    for (let i = 0; i < len; i++) {
+      const x = (i / (len - 1)) * w;
+      const v = Math.min(buf[i] / CFG.T_MAX, 1);
+      const y = h - (v * h * 0.9) - h * 0.05;
+      if (i === 0) wfCtx.moveTo(x, y);
+      else wfCtx.lineTo(x, y);
+    }
+    wfCtx.stroke();
+    wfCtx.shadowBlur = 0;
+    wfCtx.fillStyle = strokeColor + '20';
+    wfCtx.lineTo(w, h);
+    wfCtx.lineTo(0, h);
+    wfCtx.closePath();
+    wfCtx.fill();
+  }
+  
+  // ─── GPS ───
+  function startGPS() {
+    if (!navigator.geolocation) {
+      els.gpsCoords.textContent = 'GPS not available';
+      return;
+    }
+    navigator.geolocation.watchPosition(
+      (pos) => {
+        state.gpsCoords = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          alt: pos.coords.altitude
+        };
+        state.gpsAccuracy = pos.coords.accuracy;
+        els.gpsCoords.textContent = 
+          `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+        els.gpsAccuracy.textContent = `±${pos.coords.accuracy.toFixed(0)}m`;
+      },
+      (err) => {
+        els.gpsCoords.textContent = 'GPS error: ' + err.message;
+      },
+      { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+    );
+  }
+  
+  function renderMarks() {
+    if (state.marks.length === 0) {
+      els.gpsList.innerHTML = '<div class="gps-empty">no marks yet</div>';
+      return;
+    }
+    els.gpsList.innerHTML = state.marks.slice(-10).reverse().map(m => 
+      `<div class="gps-entry">
+        <span>${m.lat.toFixed(5)}, ${m.lng.toFixed(5)}</span>
+        <span class="gps-strength">${m.strength.toFixed(0)}</span>
+      </div>`
+    ).join('');
+  }
+  
+  function markLocation() {
+    if (!state.gpsCoords) {
+      els.statusBar.textContent = '⚠ GPS not ready yet';
+      return;
+    }
+    const current = state.smoothedSignal - (state.baseline || 0);
+    state.marks.push({
+      lat: state.gpsCoords.lat,
+      lng: state.gpsCoords.lng,
+      strength: Math.abs(current),
+      time: Date.now()
+    });
+    localStorage.setItem('magneto_marks', JSON.stringify(state.marks));
+    renderMarks();
+    clickSound(1);
+  }
+  
+  // ─── RENDER ───
+  function updateBars(container, value, maxVal = 50, type = 'normal') {
+    const bars = container.children;
+    const lit = Math.min(bars.length, Math.round((value / maxVal) * bars.length));
+    for (let i = 0; i < bars.length; i++) {
+      const cls = i < lit ? (
+        type === 'alert' ? 'bar lit-alert' :
+        type === 'warn' ? 'bar lit-warn' :
+        'bar lit'
+      ) : 'bar';
+      if (bars[i].className !== cls) bars[i].className = cls;
     }
   }
   
-  // ============ RENDER LOOP ============
   function render() {
-    // Smooth display value
-    displayValue += (rawValue - displayValue) * 0.22;
+    if (!state.running) return;
     
-    if (baseline === null) {
-      els.valueDisplay.textContent = String(Math.round(displayValue)).padStart(3, '0');
+    const now = Date.now();
+    if (now - state.lastRateUpdate >= 1000) {
+      els.sampleRate.textContent = state.sampleCount + ' Hz';
+      state.sampleCount = 0;
+      state.lastRateUpdate = now;
+    }
+    
+    state.smoothedSignal += (state.rawSignal - state.smoothedSignal) * CFG.SMOOTH_ALPHA;
+    state.history.push(state.smoothedSignal);
+    if (state.history.length > 300) state.history.shift();
+    
+    const delta = state.baseline !== null ? state.smoothedSignal - state.baseline : 0;
+    state.waterfallBuf.push(Math.abs(delta));
+    state.waterfallBuf.shift();
+    
+    const displayVal = Math.round(Math.abs(delta));
+    els.valueDisplay.textContent = String(displayVal).padStart(3, '0');
+    
+    if (state.baseline === null) {
       requestAnimationFrame(render);
       return;
     }
     
-    const delta = displayValue - baseline;
     const absDelta = Math.abs(delta);
-    
-    if (absDelta > peak) {
-      peak = absDelta;
-      els.peakStat.textContent = peak.toFixed(0);
+    if (absDelta > state.peak) {
+      state.peak = absDelta;
+      els.waterfallStats.textContent = 'peak: ' + state.peak.toFixed(0);
     }
     
-    els.valueDisplay.textContent = String(Math.round(displayValue)).padStart(3, '0');
-    els.baselineStat.textContent = baseline.toFixed(0);
-    els.deltaStat.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(0);
+    const norm = Math.min(1, absDelta / CFG.T_MAX);
+    els.gaugeFill.setAttribute('stroke-dasharray', `${norm * 386} 800`);
+    els.needle.style.transform = `rotate(${-135 + norm * 270}deg)`;
     
-    // Thresholds (normalized units)
-    const T_FAINT = 3;
-    const T_WARN = 10;
-    const T_ALERT = 25;
-    const T_MAX = 60;
+    let stateCls = '';
+    let statusText = '✓ گۆڕەپانى ئاسایى';
     
-    // Gauge fill (270° arc max)
-    const norm = Math.min(1, absDelta / T_MAX);
-    const dashLen = norm * 386;
-    els.gaugeFill.setAttribute('stroke-dasharray', `${dashLen} 800`);
-    
-    // Needle
-    const needleAngle = -135 + (norm * 270);
-    els.needle.style.transform = `rotate(${needleAngle}deg)`;
-    
-    // State
-    let state, statusText;
-    
-    if (absDelta > T_ALERT) {
-      state = 'alert';
+    if (absDelta > CFG.T_ALERT) {
+      stateCls = 'alert';
       statusText = '⚠ مەعدەنى ferromagnetic بەهێز نزیکە';
-      maybeBeep('alert', 1200, 180, 0.07);
-    } else if (absDelta > T_WARN) {
-      state = 'warn';
+    } else if (absDelta > CFG.T_WARN) {
+      stateCls = 'warn';
       statusText = '○ ئاسەوارى مەعدەن دۆزرایەوە';
-      maybeBeep('warn', 900, 380, 0.06);
-    } else if (absDelta > T_FAINT) {
-      state = 'faint';
+    } else if (absDelta > CFG.T_FAINT) {
       statusText = '· سیگناڵى لاواز';
-      maybeBeep('faint', 600, 700, 0.04);
-    } else {
-      state = 'normal';
-      statusText = '✓ گۆڕەپانى ئاسایى';
     }
     
-    // Apply state classes
-    const isAlert = state === 'alert';
-    const isWarn = state === 'warn';
-    els.valueDisplay.classList.toggle('alert', isAlert);
-    els.valueDisplay.classList.toggle('warn', isWarn);
-    els.gaugeFill.classList.toggle('alert', isAlert);
-    els.gaugeFill.classList.toggle('warn', isWarn);
-    els.statusBar.classList.toggle('alert', isAlert);
-    els.statusBar.classList.toggle('warn', isWarn);
+    els.valueDisplay.classList.toggle('alert', stateCls === 'alert');
+    els.valueDisplay.classList.toggle('warn', stateCls === 'warn');
+    els.gaugeFill.classList.toggle('alert', stateCls === 'alert');
+    els.gaugeFill.classList.toggle('warn', stateCls === 'warn');
+    els.statusBar.classList.toggle('alert', stateCls === 'alert');
+    els.statusBar.classList.toggle('warn', stateCls === 'warn');
     els.statusBar.textContent = statusText;
+    
+    els.motionVal.textContent = state.motionMagnitude.toFixed(1);
+    els.compassVal.textContent = state.compass !== null ? state.compass.toFixed(0) + '°' : '--°';
+    els.signalVal.textContent = absDelta.toFixed(1);
+    
+    updateBars(els.motionBars, state.motionMagnitude, 100, 'normal');
+    updateBars(els.compassBars, state.compass || 0, 360, 'normal');
+    updateBars(els.signalBars, absDelta, CFG.T_MAX,
+      stateCls === 'alert' ? 'alert' : stateCls === 'warn' ? 'warn' : 'normal');
+    
+    const analysis = analyzeSignal();
+    const setRow = (el, data) => {
+      el.textContent = data.text;
+      el.className = 'val' + (data.cls ? ' ' + data.cls : '');
+    };
+    setRow(els.intensityVal, analysis.intensity);
+    setRow(els.trendVal, analysis.trend);
+    setRow(els.profileVal, analysis.profile);
+    setRow(els.noiseVal, analysis.noise);
+    setRow(els.snrVal, analysis.snr);
+    
+    updateAudio(absDelta);
+    maybeClick(absDelta);
+    
+    if (state.sampleCount % 2 === 0) drawWaterfall();
     
     requestAnimationFrame(render);
   }
   
-  // ============ CALIBRATION ============
   function calibrate() {
-    baseline = displayValue;
-    peak = 0;
-    els.peakStat.textContent = '0';
-    els.statusBar.textContent = '✓ ڕێکخرا — ئێستا دەستپێبکە بە گەڕان';
+    state.baseline = state.smoothedSignal;
+    state.peak = 0;
+    state.history = [];
+    state.waterfallBuf = new Array(CFG.WATERFALL_SAMPLES).fill(0);
+    els.statusBar.textContent = '✓ ڕێکخرا — ئێستا دەستپێبکە';
     els.statusBar.classList.remove('alert', 'warn');
-    beep(900, 0.1);
-    setTimeout(() => beep(1300, 0.13), 130);
+    clickSound(0.5);
+    setTimeout(() => clickSound(1), 120);
   }
   
-  // ============ EVENT HANDLERS ============
   els.startBtn.addEventListener('click', async () => {
     els.startBtn.disabled = true;
     els.startBtn.textContent = 'چاوەڕێ بکە...';
-    
     initAudio();
-    
     const granted = await requestPermissions();
     if (!granted) {
       els.startBtn.disabled = false;
@@ -731,29 +974,34 @@
       els.statusBar.classList.add('alert');
       return;
     }
-    
-    const hasNative = await tryNativeMagnetometer();
-    if (!hasNative) {
-      setupCompassFallback();
-    }
-    
+    setupSensors();
+    startGPS();
+    renderMarks();
     els.startBtn.classList.add('hidden');
     els.calibrateBtn.classList.remove('hidden');
     els.muteBtn.classList.remove('hidden');
+    els.diagPanel.classList.remove('hidden');
+    els.analysisPanel.classList.remove('hidden');
+    els.gpsPanel.classList.remove('hidden');
     els.statusDot.classList.add('live');
-    els.statusLabel.textContent = 'LIVE · ' + (sensorType || 'SENSOR');
-    els.statusBar.textContent = 'ئامێر کارا — دوگمەى "ڕێکخستن" لێ بدە';
+    els.statusLabel.textContent = 'LIVE · ' + (state.sensorType || 'SENSOR');
+    els.statusBar.textContent = 'ئامێر کارا — "ڕێکخستن" لێ بدە';
     els.statusBar.classList.remove('alert');
-    
+    state.running = true;
     requestAnimationFrame(render);
   });
   
   els.calibrateBtn.addEventListener('click', calibrate);
-  
   els.muteBtn.addEventListener('click', () => {
-    muted = !muted;
-    els.muteBtn.textContent = muted ? 'دەنگ · کوژاوە' : 'دەنگ · کارا';
+    state.muted = !state.muted;
+    els.muteBtn.textContent = state.muted ? 'دەنگ · کوژاوە' : 'دەنگ · کارا';
+    if (state.muted && state.gainNode) {
+      state.gainNode.gain.setTargetAtTime(0, state.audioCtx.currentTime, 0.05);
+    }
   });
+  els.markBtn.addEventListener('click', markLocation);
+  
+  drawWaterfall();
 })();
 </script>
 </body>
